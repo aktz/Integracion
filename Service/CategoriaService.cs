@@ -1,6 +1,9 @@
+using AutoMapper;
 using Contracts;
+using Entities.Exceptions;
 using Entities.Models;
 using Service.Contracts;
+using Shared.DataTransferObjects;
 
 namespace Service;
 
@@ -14,22 +17,40 @@ internal sealed class CategoriaService : ICategoriaService
     _logger = logger;
   }
   
-  public IEnumerable<Categoria> GetAllCategorias(bool trackChanges)
+  public async Task<IEnumerable<Categoria>> GetAllCategoriasAsync(bool trackChanges)
   {
-    var categorias = _repository.Categoria.GetAllCategorias(trackChanges);
+    var categorias = await _repository.Categoria.GetAllCategoriasAsync(trackChanges);
     return categorias;
   }
   
-  public Categoria GetCategoria(int id, bool trackChanges)
+  public async Task<Categoria> GetCategoriaAsync(int id, bool trackChanges)
   {
-    var categoria = _repository.Categoria.GetCategoria(id, trackChanges);
+    var categoria =  await _repository.Categoria.GetCategoriaAsync(id, trackChanges);
     return categoria;
   }
   
-  public Categoria CreateCategoria(Categoria categoria)
+  public async Task<Categoria> CreateCategoriaAsync(Categoria categoria)
   {
     _repository.Categoria.CreateCategoria(categoria);
-    _repository.Save();
+    await _repository.SaveAsync();
     return categoria;
+  }
+  
+  public async Task UpdateCategoriaAsync(int id, Categoria categoria, bool trackChanges)
+  {
+    var categoriaDb = await _repository.Categoria.GetCategoriaAsync(id, trackChanges);
+    if (categoriaDb is null) throw new CategoriaNotFoundException(id);
+    categoriaDb.Codigo = categoria.Codigo;
+    categoriaDb.Descripcion = categoria.Descripcion;
+    categoriaDb.Activo = categoria.Activo;
+    await _repository.SaveAsync();
+  }
+  
+  public async Task DeleteCategoriaAsync(int id, bool trackChanges)
+  {
+    var categoria = await _repository.Categoria.GetCategoriaAsync(id, trackChanges);
+    if (categoria is null) throw new CategoriaNotFoundException(id);
+    _repository.Categoria.DeleteCategoria(categoria);
+    await _repository.SaveAsync();
   }
 }

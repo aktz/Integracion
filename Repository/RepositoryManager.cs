@@ -13,5 +13,5 @@ public sealed class RepositoryManager : IRepositoryManager
       CategoriaRepository(repositoryContext));
   }
   public ICategoriaRepository Categoria => _companyRepository.Value;
-  public void Save() => _repositoryContext.SaveChanges();
+  public async Task SaveAsync() => await _repositoryContext.SaveChangesAsync();
 }
